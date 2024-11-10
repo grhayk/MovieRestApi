@@ -3,11 +3,11 @@ using Movies.Contracts.Responses;
 
 namespace Movies.Api.Mapping;
 
-public class ValidationMappingMIddleware
+public class ValidationMappingMiddleware
 {
     private readonly RequestDelegate _next;
 
-    public ValidationMappingMIddleware(RequestDelegate next)
+    public ValidationMappingMiddleware(RequestDelegate next)
     {
         _next = next;
     }
