@@ -41,14 +41,18 @@ builder.Services.AddAuthentication(x =>
 
 builder.Services.AddAuthorization(x =>
 {
-    x.AddPolicy(AuthConstants.AdminUserPolicyName,
+    /*x.AddPolicy(AuthConstants.AdminUserPolicyName,
         p => p.RequireClaim(AuthConstants.AdminClaimName,"true"));
-    
+        */
+    x.AddPolicy(AuthConstants.AdminUserPolicyName,
+        p => p.AddRequirements(new AdminAuthRequirement(config["ApiKey"])));
     x.AddPolicy(AuthConstants.TrustedMemberPolicyName,
         p=>p.RequireAssertion(c=>
             c.User.HasClaim(m=>m is {Type:AuthConstants.AdminClaimName, Value:"true"}) ||
             c.User.HasClaim(m=>m is {Type:AuthConstants.TrustedMemberClaimName, Value:"true"})));
 });
+
+builder.Services.AddScoped<ApiKeyAuthFilter>();
 
 builder.Services.AddApiVersioning(x =>
 {
@@ -59,6 +63,17 @@ builder.Services.AddApiVersioning(x =>
 }).AddMvc().AddApiExplorer();
 
 //builder.Services.AddResponseCaching();
+builder.Services.AddOutputCache(x =>
+{
+    x.AddBasePolicy(c => c.Cache());
+    x.AddPolicy("MovieCache", c =>
+    {
+        c.Cache()
+            .Expire(TimeSpan.FromMinutes(1))
+            .SetVaryByQuery(new []{"title", "year", "sortBy", "page", "pageSize"})
+            .Tag("movies");
+    });
+});
 
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks()
@@ -92,6 +107,7 @@ app.UseAuthorization();
 
 //app.usecors();
 //app.UseResponseCaching();
+app.UseOutputCache();
 
 app.UseMiddleware<ValidationMappingMiddleware>();
 app.MapControllers();
