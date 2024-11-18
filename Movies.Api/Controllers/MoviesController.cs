@@ -24,11 +24,6 @@ public class MoviesController : ControllerBase
         _movieService = movieService;
         _outputCacheStore = outputCacheStore;
     }
-
-    public MoviesController(IMovieService movieService)
-    {
-        _movieService = movieService;
-    }
     
     [Authorize(AuthConstants.TrustedMemberPolicyName)]
     [HttpPost(ApiEndpoints.Movies.Create)]
